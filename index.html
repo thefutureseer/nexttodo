@@ -3,16 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Next ToDo</title>
+  <title>Todo App</title>
+  <style>
+    /* Add CSS styles for styling the Markdown content */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f8f8;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
-  <div id="markdown-content">
-    <!-- Pasted the contents of the README.md file here -->
-    Test to see if Vercel deploys this..
-    # start here
-    # README.md
-    
-    <!-- End of README.md contents -->
-  </div>
+  <header>
+    <h1>Welcome to the Todo App</h1>
+  </header>
+  <main>
+    <article>
+      <section>
+        <h2>Introduction</h2>
+        <p>This is a simple todo application built with Next.js, GraphQL, Apollo Server, and MongoDB.</p>
+      </section>
+
+      <section>
+        <h2>Features</h2>
+        <ul>
+          <li>Add new todos</li>
+          <li>Mark todos as complete or incomplete</li>
+          <li>Delete todos</li>
+          <li>View list of todos</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Technologies Used</h2>
+        <ul>
+          <li>Next.js</li>
+          <li>GraphQL</li>
+          <li>Apollo Server</li>
+          <li>MongoDB</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Installation</h2>
+        <pre>
+          <code>
+git clone https://github.com/your-username/todo-app.git
+cd todo-app
+npm install
+npm run dev
+          </code>
+        </pre>
+        <p>Open your browser and navigate to <a href="http://localhost:3000">http://localhost:3000</a> to view the app.</p>
+      </section>
+
+      <section>
+        <h2>Usage</h2>
+        <p>Follow the instructions on the homepage to add, mark, delete, and view todos.</p>
+      </section>
+
+      <section>
+        <h2>Contributing</h2>
+        <p>Contributions are welcome! If you'd like to contribute to the project, please follow the instructions in the repository.</p>
+      </section>
+
+      <section>
+        <h2>License</h2>
+        <p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+      </section>
+    </article>
+  </main>
 </body>
 </html>
