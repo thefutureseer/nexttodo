@@ -1,2 +1,26 @@
-# start here
-# README.md
+# Todo App
+
+This is a simple todo application built with Next.js, GraphQL, Apollo Server, and MongoDB.
+
+## Features
+
+- Add new todos
+- Mark todos as complete or incomplete
+- Delete todos
+- View list of todos
+
+## Technologies Used
+
+- Next.js: A React framework for building server-side rendered and statically generated applications.
+- GraphQL: A query language for APIs and a runtime for executing those queries.
+- Apollo Server: A GraphQL server that integrates with various data sources.
+- MongoDB: A NoSQL database for storing todo data.
+
+## Installation
+
+To run the todo app locally, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/todo-app.git
