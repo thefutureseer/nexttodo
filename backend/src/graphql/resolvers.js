@@ -1,4 +1,4 @@
-const Todo = require('../models/Todo'); // Assuming Todo model is defined in Todo.js
+const Todo = require('../models/Todos');
 const { authenticate } = require('./auth');
 
 // Define resolver functions
