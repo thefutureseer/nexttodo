@@ -10,6 +10,12 @@ function authenticate(req, res, next) { // Define the authenticate middleware fu
     return next(); // Skip token verification and move to the next middleware or route handler
   }
 
+    // Skip authentication for specific routes like user signup
+    if (req.path === '/graphql' && req.method === 'POST') {
+      // Allow access without authentication
+      return next();
+    }  
+
   // Check if the Authorization header exists and starts with 'Bearer '
   if (!authHeader || !authHeader.startsWith('Bearer ')) { // If no Authorization header or it doesn't start with 'Bearer '
     return res.status(401).json({ message: 'Unauthorized: No token provided' }); // Respond with 401 Unauthorized
