@@ -1,93 +1,165 @@
-const Todo = require('../models/Todos');
-const { authenticate } = require('./auth');
+const { User, Todo } = require('../models');
+const { generateToken } = require('../util/jwtUtils');
+const { hashPassword, comparePassword } = require('../util/bcryptUtils');
 
-// Define resolver functions
 const resolvers = {
   Query: {
-    // Resolver function for querying todos
-    todos: async (_, { userId }, context) => {
-      // Check authentication before proceeding
-      authenticate(context);
-
+    userTodos: async (_, __, { user }) => {
+      if (!user) {
+        throw new Error('Unauthorized: User not authenticated');
+      }
+      // Retrieve todos associated with the authenticated user
+      const todos = await Todo.find({ userId: user.id });
+      return todos;
+    },
+    todosByUserId: async (_, { userId }) => {
+      // Retrieve todos associated with a specific user
+      const todos = await Todo.find({ userId });
+      return todos;
+    },
+    todos: async () => {
+      // Retrieve all todos
+      const todos = await Todo.find();
+      return todos;
+    },
+    users: async () => {
+      // Retrieve all users
+      const users = await User.find();
+      return users;
+    },
+    userById: async (_, { id }) => {
       try {
-        // Fetch todos associated with the authenticated user
-        const todos = await Todo.find({ userId });
-        return todos;
-      } catch (err) {
-        // Handle errors if fetching todos fails
-        throw new Error('Failed to fetch todos');
+        // Retrieve the user by ID from the database
+        const user = await User.findById(id);
+        if (!user) {
+          throw new Error('User not found');
+        }
+        return user;
+      } catch (error) {
+        throw new Error(`Failed to fetch user: ${error.message}`);
       }
     },
   },
 
   Mutation: {
-    // Resolver function for adding a new todo
-    addTodo: async (_, { text }, context) => {
-      // Check authentication before proceeding
-      authenticate(context);
-
+    signUp: async (_, { username, email, password }) => {
       try {
-        // Create a new todo instance with provided text and associate it with the authenticated user
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          throw new Error('Email already exists');
+        }
+
+        // Hash the password
+        const hashedPassword = await hashPassword(password);
+
+        // Create a new user
+        const newUser = new User({
+          username,
+          email,
+          password: hashedPassword,
+        });
+        await newUser.save();
+
+        // Generate JWT token for the new user
+        const token = generateToken({ userId: newUser._id });
+
+        return {
+          user: newUser,
+          token,
+        };
+      } catch (error) {
+        throw new Error(`Failed to sign up: ${error.message}`);
+      }
+    },
+    signIn: async (_, { email, password }) => {
+      try {
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+          throw new Error('User not found');
+        }
+
+        // Compare passwords
+        const isPasswordMatch = await comparePassword(password, user.password);
+        if (!isPasswordMatch) {
+          throw new Error('Invalid password');
+        }
+
+        // Generate JWT token for the user
+        const token = generateToken({ userId: user._id });
+
+        return {
+          user,
+          token,
+        };
+      } catch (error) {
+        throw new Error(`Failed to sign in: ${error.message}`);
+      }
+    },
+    addTodo: async (_, { text, userId }) => {
+      try {
+        // Create a new todo using the Todo model
         const todo = new Todo({
           text,
           completed: false,
-          userId: context.user.id, // Associate todo with authenticated user
+          userId, // Assign the todo to the user
         });
         // Save the new todo to the database
         await todo.save();
         return todo;
       } catch (err) {
-        // Handle errors if adding todo fails
+        // Handle errors
         throw new Error('Failed to add todo');
       }
     },
-    updateTodo: async (_, { id, text, completed }, context) => {
-      // Check authentication
-      authenticate(context);
-    
-      try {
-        // Initialize an empty object to store update fields
-        const updateFields = {};
-    
-        // Check if 'text' parameter is provided in the mutation input
-        // If provided, add it to the updateFields object
-        if (text !== undefined) {
-          updateFields.text = text;
-        }
-    
-        // Check if 'completed' parameter is provided in the mutation input
-        // If provided, add it to the updateFields object
-        if (completed !== undefined) {
-          updateFields.completed = completed;
-        }
-    
-        // Use the updateFields object to update the corresponding fields of the todo in the database
-        // The 'new: true' option ensures that the updated todo is returned after the update operation
-        const todo = await Todo.findByIdAndUpdate(id, updateFields, { new: true });
-    
-        // Return the updated todo
-        return todo;
-      } catch (err) {
-        // Throw an error if the update operation fails
-        throw new Error('Failed to update todo');
+    updateTodo: async (_, { id, text, completed }, { user }) => {
+      if (!user) {
+        throw new Error('Unauthorized: User not authenticated');
       }
-    },
-       
-    // Resolver function for deleting an existing todo
-    deleteTodo: async (_, { id }, context) => {
-      // Check authentication before proceeding
-      authenticate(context);
 
       try {
-        // Find the todo by ID and delete it
-        const todo = await Todo.findByIdAndDelete(id);
+        // Check if the todo belongs to the authenticated user
+        const todo = await Todo.findById(id);
+        if (!todo) {
+          throw new Error('Todo not found');
+        }
+        if (todo.userId !== user.id) {
+          throw new Error('Unauthorized: Access denied');
+        }
+
+        // Update the todo with the provided data
+        if (text !== undefined) {
+          todo.text = text;
+        }
+        if (completed !== undefined) {
+          todo.completed = completed;
+        }
+
+        // Save the updated todo to the database
+        await todo.save();
+
         return todo;
-      } catch (err) {
-        // Handle errors if deleting todo fails
-        throw new Error('Failed to delete todo');
+      } catch (error) {
+        throw new Error(`Failed to update todo: ${error.message}`);
       }
     },
-  },
-};
+
+      // Resolver function for deleting an existing todo
+      deleteTodo: async (_, { id }, context) => {
+        // Check authentication before proceeding
+        authenticate(context);
+  
+        try {
+          // Find the todo by ID and delete it
+          const todo = await Todo.findByIdAndDelete(id);
+          return todo;
+        } catch (err) {
+          // Handle errors if deleting todo fails
+          throw new Error('Failed to delete todo');
+        }
+      },
+    }
+}    
 
 module.exports = resolvers;
