@@ -7,6 +7,7 @@ function authenticate(req, res, next) { // Define the authenticate middleware fu
   // Check if the request is for the GraphQL playground
   if (req.path === '/graphql' && req.method === 'GET') { // If the request path is /graphql and the method is GET
     // Allow access to the playground without authentication
+    console.log('Skipping token verification for GraphQL playground request');
     return next(); // Skip token verification and move to the next middleware or route handler
   }
 
