@@ -1,64 +1,52 @@
-const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
-const mongoose = require('mongoose');
-const { Todo } = require('./models'); // Require the Todo model
-const { authenticate } = require('./util/authMiddleware.js');
-const { typeDefs, resolvers } = require('./graphql/index');
-const cors = require('cors');
+const express = require('express'); // Import the express framework
+const { ApolloServer } = require('apollo-server-express'); // Import Apollo Server for GraphQL
+const { Todo } = require('./models'); // Import the Todo model
+const {setJsonContentType} = require('./middleware/middleware.js'); // Import middleware to set JSON Content-Type
+const { authenticate } = require('./middleware/authMiddleware.js'); // Import authentication middleware
+const { typeDefs, resolvers } = require('./graphql/index'); // Import GraphQL type definitions and resolvers
+const cors = require('cors'); // Import CORS middleware
+const connectToMongoDB = require('./dbconfig/mongoConfig.js'); // Import function to connect to MongoDB
 
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables from .env file
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 4000; // Set the port from environment variables or default to 4000
 
-const dburi = process.env.MONGODB_URI
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: ({ req }) => {
-    const user = req.user || null;
-    return { user, Todo };
+const server = new ApolloServer({ // Create a new Apollo Server instance
+  typeDefs, // Pass GraphQL type definitions
+  resolvers, // Pass GraphQL resolvers
+  context: ({ req }) => { // Define context function to pass data to resolvers
+    const user = req.user || null; // Get user from request object or set to null if not available
+    return { user, Todo }; // Return context object with user and Todo model
   },
-  formatError: (error) => {
-    const { message, path } = error;
-    return { message, path };
+  formatError: (error) => { // Define function to format errors
+    const { message, path } = error; // Destructure error object to get message and path
+    return { message, path }; // Return formatted error object
   },
 });
 
 async function startApolloServer() {
-  // Start the Apollo Server instance
-  await server.start();
+  await server.start(); // Start the Apollo Server instance
 
-  const app = express();
+  const app = express(); // Create an Express application
 
-  // Enable CORS middleware
-  app.use(cors(
-    {
-    origin: '*', // Allow requests from any origin, or specify your allowed origins
+  app.use(cors({ // Enable CORS middleware
+    origin: '*', // Allow requests from any origin
     methods: ['GET', 'POST'], // Allow GET and POST requests
-    credentials: true, // Allow credentials to be sent with requests (if needed)
-  }
-  ));
+    credentials: true, // Allow credentials to be sent with requests
+  }));
 
-  app.use(authenticate);
+  app.use(setJsonContentType); // Use middleware to set Content-Type header to JSON
+  app.use(authenticate); // Use authentication middleware
 
-  // Apply Apollo Server middleware to Express app
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app }); // Apply Apollo Server middleware to Express app
 
-  // Connect to MongoDB
-  mongoose.connect(dburi, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-      console.log('Connected to MongoDB');
-      // Start Express server
-      app.listen(PORT, () => {
-        console.log(`Server is running at http://localhost:${PORT}/graphql`);
-      });
-    })
-    .catch((err) => {
-      console.error('Error connecting to MongoDB:', err);
-    });
+  await connectToMongoDB(); // Connect to MongoDB
+
+  app.listen(PORT, () => { // Start the Express server
+    console.log(`Server is running at http://localhost:${PORT}/graphql`); // Log server start message
+  });
 }
 
-startApolloServer().catch((error) => {
-  console.error('Error starting Apollo Server:', error);
+startApolloServer().catch((error) => { // Start Apollo Server and handle errors
+  console.error('Error starting Apollo Server:', error); // Log error if Apollo Server fails to start
 });
