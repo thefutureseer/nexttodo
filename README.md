@@ -1,6 +1,6 @@
 # Todo App
 
-This is a simple todo application built with Next.js, GraphQL, Apollo Server, and MongoDB.
+This is an auth todo application built with Next.js, jsonwebtoken, GraphQL, Apollo Server, and MongoDB.
 
 ## Features
 
