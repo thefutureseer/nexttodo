@@ -24,4 +24,4 @@ To run the todo app locally, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/thefutureseer/todo-app.git
+   git clone https://github.com/thefutureseer/nexttodo.git
