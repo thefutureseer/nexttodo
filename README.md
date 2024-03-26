@@ -15,6 +15,7 @@ This is an auth todo application built with Next.js, jsonwebtoken, GraphQL, Apol
 - GraphQL: A query language for APIs and a runtime for executing those queries.
 - Apollo Server: A GraphQL server that integrates with various data sources.
 - MongoDB: A NoSQL database for storing todo data.
+- JSON Web Token (JWT): A compact, URL-safe means of representing claims to be transferred between two parties.
 
 ## Installation
 
@@ -23,4 +24,4 @@ To run the todo app locally, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/todo-app.git
+   git clone https://github.com/thefutureseer/todo-app.git
