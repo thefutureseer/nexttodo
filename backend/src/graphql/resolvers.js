@@ -9,7 +9,6 @@ const resolvers = {
     currentUser: async (parent, { userId }) => {
       return User.findOne({ _id: userId });
     },
-
   },
 
   Mutation: {
@@ -70,6 +69,24 @@ const resolvers = {
         return { user, token };
       } catch (error) {
         throw new Error(`Failed to sign in: ${error.message}`);
+      }
+    },
+
+    addTodo: async (_, args) => {
+      console.log("this is to addtodo:args ", args.input)
+      const {title, text, completed} = args.input
+
+      try {
+        
+        const newTodo = new Todo({title: title,text: text,completed: completed});
+        console.log("this is to addtodo newTodos: ", newTodo)
+        // Save the new todo to the database
+        await newTodo.save();
+
+        return newTodo;
+      } catch (error) {
+        console.error('Failed to add todo:', error.message);
+        throw new Error('Failed to add todo line 150');
       }
     },
     
