@@ -6,7 +6,6 @@ let user = null; // Initialize user to null
 // Check if user information exists in the request object
 if (req && req.user) {
   // If user information exists, assign it to the user variable
-  console.log("this is context.req.user line9 ", req.user);
   user = req.user;
 };
 
