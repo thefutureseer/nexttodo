@@ -1,10 +1,8 @@
 const { User, Todo } = require('../models/index.js');
 const { generateToken } = require('../util/jwtUtils');
-const { hashPassword, comparePassword } = require('../util/bcryptUtils');
 const { isValidEmail } = require('./validations/isValid.js');
 const { nowVerify } = require('../util/nowVerify.js');
-const { authSignIn } = require('../middleware/authMiddleware.js');
-const { authenticate, AuthenticationError } = require('../middleware/authMiddleware.js');
+// const { authenticate, AuthenticationError } = require('../middleware/authMiddleware.js');
 
 const resolvers = {
   Query: {
@@ -16,7 +14,7 @@ const resolvers = {
   },
 
   Mutation: {
-    signUp: async (_, args) => {
+    signUp: async (_, args, {req, signIn}) => {
       const { username, email, password } = args.input;
 
       if (!username || !email || !password) {
@@ -37,21 +35,39 @@ const resolvers = {
         // const hashedPassword = await hashPassword(password);
         await newUser.save();
         const token = generateToken({ userId: newUser._id });
+        //after signing up imediately sign in user
+        await signIn(email, password);
+
+
         // Return the user along with the token
-      return { user: newUser.toObject({ getters: true }), token };
+        return { user: newUser.toObject({ getters: true }), token };
       } catch (error) {
         console.error('Error creating user:', error);
         throw new Error('Failed to create user');
       }
     },
-  
-    signIn: async (_, args) => {
+
+    //signIn function coming from context
+    signIn: async (_, args, {req, signIn}) => {
+      console.log("req from resolver line73 ", req );
       // Destructure email and password from args.input
       const { email, password } = args.input;
-      console.log("resolver handing authsignIn email password to run: ", email);
-      const userSignedIn = await authSignIn(email, password);
-      return userSignedIn;
-    }, 
+
+      try {
+        //Do sign in from ContextCreation
+        const userInput = signIn(email, password);
+
+        //After signing in the info comes 
+        //back to the resolver for further processing
+
+        //return user input after signin
+        return userInput;
+      } catch(error) {
+        console.error('Error during sign-in:', error);
+         throw new Error('bad sign in line88');
+      }
+    },
+
   }
 };
 
